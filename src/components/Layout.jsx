@@ -1,0 +1,13 @@
+import { Outlet } from 'react-router-dom'
+import Navbar from './Navbar'
+
+export default function Layout() {
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+      <Navbar />
+      <main className="max-w-5xl mx-auto px-4 pb-24 md:pb-8 pt-4">
+        <Outlet />
+      </main>
+    </div>
+  )
+}

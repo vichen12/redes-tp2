@@ -1,72 +1,64 @@
-Ejecución del Código – Protocolo de Capa de Enlace de Datos
+# TuFinanza — Contabilidad Inteligente
 
-Se desarrolló un programa en JavaScript que simula la transmisión de mensajes entre distintas VLAN de una clínica odontológica, aplicando enmarcado de tramas, números de secuencia y verificación de errores (CRC).
+App de finanzas personales construida con React + Vite + Express + SQLite. Gratis, open source y sin suscripciones.
 
-El programa se ejecuta con el siguiente comando:
+## Funcionalidades
 
-node .\redes.js
+- **Dashboard** con KPIs de ingresos, gastos, ahorro y meta %
+- **Mascota animada** con estados de ánimo que reflejan tu situación financiera
+- **Registro de movimientos** — cargá un gasto o ingreso en segundos
+- **Metas de ahorro** con barra de progreso y alertas de completado
+- **Presupuesto por categoría** con alertas cuando te acercás al límite
+- **Gráficos** — pie de gastos por categoría + barras ingresos vs gastos (últimos 4 meses)
+- **Modo oscuro** con persistencia automática
+- **Categorías personalizadas** — creá las tuyas propias
+- **Exportar CSV** — descargá todos tus movimientos del mes
+- **Regla 50/30/20** integrada en Presupuesto y Metas
+- **Tips financieros** diarios aleatorios
+- **Búsqueda y filtros** por mes, tipo y categoría
 
-Salida del Programa
-PROTOCOLO DE CAPA DE ENLACE DE DATOS
-Clínica Odontológica Coronel Rodríguez
-Medio: UTP Cat 6 + Fibra óptica OM3
-======================================================================
+## Tech Stack
 
-[*] Iniciando transmision de mensajes...
+| Capa | Tecnología |
+|------|-----------|
+| Frontend | React 18 + Vite |
+| Estilos | Tailwind CSS |
+| Gráficos | Recharts |
+| Routing | React Router v6 |
+| Backend | Express.js |
+| Base de datos | SQLite (better-sqlite3) |
 
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-[>>] Comunicacion 1/5: VLAN 10 (Administración)
-[>>] TRANSMISOR - Enviando trama con SEQ=0
-Mensaje: "Solicitud de historial clínico paciente #4521"
-[<<] RECEPTOR - Procesando trama recibida
-[OK] Trama valida recibida
-[OK] ACK recibido - Trama 0 confirmada
+## Instalación
 
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-[>>] Comunicacion 2/5: VLAN 20 (Clínica)
-[>>] TRANSMISOR - Enviando trama con SEQ=1
-Mensaje: "Confirmación de turno para tratamiento de conducto"
-[<<] RECEPTOR - Procesando trama recibida
-[OK] Trama valida recibida
-[OK] ACK recibido - Trama 1 confirmada
+```bash
+npm install
+```
 
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-[>>] Comunicacion 3/5: VLAN 30 (Servidores)
-[>>] TRANSMISOR - Enviando trama con SEQ=2
-Mensaje: "Backup de base de datos completado exitosamente"
-[<<] RECEPTOR - Procesando trama recibida
-[OK] Trama valida recibida
-[OK] ACK recibido - Trama 2 confirmada
+## Desarrollo
 
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-[>>] Comunicacion 4/5: VLAN 10 → VLAN 30
-[>>] TRANSMISOR - Enviando trama con SEQ=3
-Mensaje: "Actualización de datos de facturación mensual"
-[<<] RECEPTOR - Procesando trama recibida
-[OK] Trama valida recibida
-[OK] ACK recibido - Trama 3 confirmada
+```bash
+npm run dev
+```
 
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-[>>] Comunicacion 5/5: VLAN 20 → VLAN 30
-[>>] TRANSMISOR - Enviando trama con SEQ=4
-Mensaje: "Registro de nuevo paciente en sistema"
-[<<] RECEPTOR - Procesando trama recibida
-[OK] Trama valida recibida
-[OK] ACK recibido - Trama 4 confirmada
+Abre `http://localhost:5173` — el backend corre en el puerto 3001.
 
-======================================================================
-[*] RESUMEN DE TRANSMISION
-[OK] Mensajes exitosos: 5/5
-[X] Mensajes fallidos: 0/5
-[%] Tasa de exito: 100.0%
-======================================================================
-> Demostracion completada
+## Producción
 
+```bash
+npm run build
+NODE_ENV=production npm start
+```
 
-Notas sobre la salida:
+## Estructura
 
-Cada mensaje se envía como una trama con número de secuencia y CRC.
-
-El receptor valida el CRC y confirma la recepción con un ACK.
-
-Al final, el resumen muestra que todas las transmisiones fueron exitosas, con 100% de tasa de éxito.
+```
+├── src/
+│   ├── pages/         # Dashboard, Transacciones, Metas, Presupuesto, Categorias
+│   ├── components/    # Navbar, StatCard, Monedita, Charts, modals
+│   ├── context/       # AppContext (estado global)
+│   └── utils/         # format.js, categories.js
+└── server/
+    ├── index.js       # Express server
+    ├── db.js          # SQLite setup
+    └── routes/        # transactions, goals, budgets, categories
+```
