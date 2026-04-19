@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react'
 import { getCurrentMonth } from '../utils/format'
+import * as db from '../lib/storage'
 
 const AppContext = createContext()
 export const useApp = () => useContext(AppContext)
@@ -22,21 +23,18 @@ export function AppProvider({ children }) {
   const fetchAll = useCallback(async (month) => {
     setLoading(true)
     try {
-      const [txRes, sumRes, goalsRes, budgetsRes, catsRes] = await Promise.all([
-        fetch(`/api/transactions?month=${month}`),
-        fetch(`/api/transactions/summary/${month}`),
-        fetch('/api/goals'),
-        fetch('/api/budgets'),
-        fetch('/api/categories'),
+      const [txs, sum, gs, bs, cats] = await Promise.all([
+        db.getTransactions(month),
+        db.getSummary(month),
+        db.getGoals(),
+        db.getBudgets(),
+        db.getCustomCategories(),
       ])
-      const [txData, sumData, goalsData, budgetsData, catsData] = await Promise.all([
-        txRes.json(), sumRes.json(), goalsRes.json(), budgetsRes.json(), catsRes.json()
-      ])
-      setTransactions(txData)
-      setSummary(sumData)
-      setGoals(goalsData)
-      setBudgets(budgetsData)
-      setCustomCategories(catsData)
+      setTransactions(txs)
+      setSummary(sum)
+      setGoals(gs)
+      setBudgets(bs)
+      setCustomCategories(cats)
     } finally {
       setLoading(false)
     }
@@ -44,62 +42,19 @@ export function AppProvider({ children }) {
 
   useEffect(() => { fetchAll(selectedMonth) }, [selectedMonth, fetchAll])
 
-  const addTransaction = async (data) => {
-    await fetch('/api/transactions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-    await fetchAll(selectedMonth)
-  }
+  const addTransaction = async (data) => { await db.addTransaction(data); await fetchAll(selectedMonth) }
+  const updateTransaction = async (id, data) => { await db.updateTransaction(id, data); await fetchAll(selectedMonth) }
+  const deleteTransaction = async (id) => { await db.deleteTransaction(id); await fetchAll(selectedMonth) }
 
-  const updateTransaction = async (id, data) => {
-    await fetch(`/api/transactions/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-    await fetchAll(selectedMonth)
-  }
+  const addGoal = async (data) => { await db.addGoal(data); setGoals(await db.getGoals()) }
+  const updateGoalAmount = async (id, amount) => { await db.updateGoalAmount(id, amount); setGoals(await db.getGoals()) }
+  const deleteGoal = async (id) => { await db.deleteGoal(id); setGoals(await db.getGoals()) }
 
-  const deleteTransaction = async (id) => {
-    await fetch(`/api/transactions/${id}`, { method: 'DELETE' })
-    await fetchAll(selectedMonth)
-  }
+  const addBudget = async (data) => { await db.addBudget(data); setBudgets(await db.getBudgets()) }
+  const deleteBudget = async (id) => { await db.deleteBudget(id); setBudgets(await db.getBudgets()) }
 
-  const addGoal = async (data) => {
-    await fetch('/api/goals', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-    const res = await fetch('/api/goals')
-    setGoals(await res.json())
-  }
-
-  const updateGoalAmount = async (id, amount) => {
-    await fetch(`/api/goals/${id}/add`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ amount }) })
-    const res = await fetch('/api/goals')
-    setGoals(await res.json())
-  }
-
-  const deleteGoal = async (id) => {
-    await fetch(`/api/goals/${id}`, { method: 'DELETE' })
-    const res = await fetch('/api/goals')
-    setGoals(await res.json())
-  }
-
-  const addBudget = async (data) => {
-    await fetch('/api/budgets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-    const res = await fetch('/api/budgets')
-    setBudgets(await res.json())
-  }
-
-  const deleteBudget = async (id) => {
-    await fetch(`/api/budgets/${id}`, { method: 'DELETE' })
-    const res = await fetch('/api/budgets')
-    setBudgets(await res.json())
-  }
-
-  const addCustomCategory = async (data) => {
-    await fetch('/api/categories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
-    const res = await fetch('/api/categories')
-    setCustomCategories(await res.json())
-  }
-
-  const deleteCustomCategory = async (id) => {
-    await fetch(`/api/categories/${id}`, { method: 'DELETE' })
-    const res = await fetch('/api/categories')
-    setCustomCategories(await res.json())
-  }
+  const addCustomCategory = async (data) => { await db.addCustomCategory(data); setCustomCategories(await db.getCustomCategories()) }
+  const deleteCustomCategory = async (id) => { await db.deleteCustomCategory(id); setCustomCategories(await db.getCustomCategories()) }
 
   const exportCSV = () => {
     const headers = ['Fecha', 'Tipo', 'Categoría', 'Concepto', 'Monto']
@@ -108,9 +63,7 @@ export function AppProvider({ children }) {
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
-    a.href = url
-    a.download = `finanzas-${selectedMonth}.csv`
-    a.click()
+    a.href = url; a.download = `finanzas-${selectedMonth}.csv`; a.click()
     URL.revokeObjectURL(url)
   }
 
@@ -127,8 +80,7 @@ export function AppProvider({ children }) {
     <AppContext.Provider value={{
       darkMode, setDarkMode,
       selectedMonth, setSelectedMonth,
-      transactions, goals, budgets, customCategories, summary,
-      loading,
+      transactions, goals, budgets, customCategories, summary, loading,
       addTransaction, updateTransaction, deleteTransaction,
       addGoal, updateGoalAmount, deleteGoal,
       addBudget, deleteBudget,
